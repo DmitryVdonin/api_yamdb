@@ -1,6 +1,14 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
-
 from .constants import CHARS_PER_STR
+
+
+class User(AbstractUser):
+    bio = models.TextField(
+        'Биография',
+        blank=True,
+    )
+
 
 CHOICES = (
     (1, 1),
