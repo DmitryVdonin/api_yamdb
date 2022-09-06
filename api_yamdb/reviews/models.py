@@ -1,6 +1,14 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
-
 from .constants import CHARS_PER_STR
+
+
+class User(AbstractUser):
+    bio = models.TextField(
+        'Биография',
+        blank=True,
+    )
+
 
 CHOICES = (
     (1, 1),
@@ -135,4 +143,4 @@ class Comments(models.Model):
     pub_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата')
 
     def __str__(self):
-        return self.text[:CHARS_PER_STR]
+        return self.text[:CHARS_PER_STR
