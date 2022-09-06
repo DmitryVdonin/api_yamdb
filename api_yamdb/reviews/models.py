@@ -45,7 +45,6 @@ class Title(models.Model):
         verbose_name='Title',
     )
     year = models.IntegerField(
-        max_length=64,
         verbose_name='Year'
     )
     description = models.TextField(
@@ -75,7 +74,7 @@ class GenreTitle(models.Model):
 
     genre = models.ForeignKey(
         Genre,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         verbose_name='Genre'
     )
     title = models.ForeignKey(
