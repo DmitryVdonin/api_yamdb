@@ -26,3 +26,4 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
                 fail_silently=False,
                 )
 
+
