@@ -58,7 +58,6 @@ class Title(models.Model):
         verbose_name='Title',
     )
     year = models.IntegerField(
-        max_length=64,
         verbose_name='Year'
     )
     description = models.TextField(
@@ -88,7 +87,7 @@ class GenreTitle(models.Model):
 
     genre = models.ForeignKey(
         Genre,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
         verbose_name='Genre'
     )
     title = models.ForeignKey(
@@ -107,11 +106,13 @@ class Review(models.Model):
     title_id = models.ForeignKey(
         Title, on_delete=models.CASCADE,
         verbose_name='Произведение',
+        related_name='reviews',
     )
     text = models.TextField(verbose_name='Текст отзыва')
     author = models.ForeignKey(
         User, on_delete=models.CASCADE,
         verbose_name='автор_отзыва',
+        related_name='reviews',
     )
     score = models.IntegerField(choices=CHOICES, verbose_name='Рейтинг')
     pub_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата')
@@ -126,11 +127,13 @@ class Comments(models.Model):
     review_id = models.ForeignKey(
         Review, on_delete=models.CASCADE,
         verbose_name='Отзыв',
+        related_name='comments'
     )
     text = models.TextField(verbose_name='Текст комментария')
     author = models.ForeignKey(
         User, on_delete=models.CASCADE,
         verbose_name='Автор комментария',
+        related_name='comments',
     )
     pub_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата')
 
