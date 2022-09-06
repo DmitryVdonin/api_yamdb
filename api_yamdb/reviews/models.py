@@ -115,14 +115,12 @@ class Review(models.Model):
         Title, on_delete=models.CASCADE,
         verbose_name='Произведение',
         related_name='reviews',
-
     )
     text = models.TextField(verbose_name='Текст отзыва')
     author = models.ForeignKey(
         User, on_delete=models.CASCADE,
         verbose_name='автор_отзыва',
         related_name='reviews',
-
     )
     score = models.IntegerField(choices=CHOICES, verbose_name='Рейтинг')
     pub_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата')
@@ -148,4 +146,5 @@ class Comments(models.Model):
     pub_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата')
 
     def __str__(self):
-        return self.text[:CHARS_PER_STR
+        return self.text[:CHARS_PER_STR]
+    
