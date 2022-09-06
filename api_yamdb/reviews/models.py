@@ -24,6 +24,7 @@ CHOICES = (
 )
 
 
+# Для слаг добавить фильтр на регексп? в редоке посмотреть
 class Category(models.Model):
     """Модель Category(Категория)."""
 
@@ -34,13 +35,14 @@ class Category(models.Model):
     slug = models.SlugField(
         verbose_name='Id_Category',
         unique=True,
-        max_length=256
+        max_length=50
     )
 
     def __str__(self):
         return self.name
 
 
+# Для слаг добавить фильтр на регексп? в редоке посмотреть
 class Genre(models.Model):
     """Модель Genre(Жанр)."""
 
@@ -51,7 +53,7 @@ class Genre(models.Model):
     slug = models.SlugField(
         verbose_name='Id_Genre',
         unique=True,
-        max_length=256
+        max_length=50
     )
 
     def __str__(self):
@@ -84,6 +86,11 @@ class Title(models.Model):
         Genre,
         verbose_name='Genre',
         through='GenreTitle'
+    )
+    rating = models.IntegerField(
+        verbose_name='Rating',
+        null=True,
+        default=None
     )
 
     def __str__(self):
