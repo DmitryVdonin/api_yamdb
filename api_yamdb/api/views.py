@@ -4,8 +4,9 @@ from rest_framework import viewsets, generics, mixins
 from django.core.mail import send_mail
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
+from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .serializers import UserSerializer, UserCreateSerializer
+from .serializers import UserSerializer, UserCreateSerializer, UserTokenObtainSerializer
 from .permissions import IsAdmin
 
 
@@ -45,6 +46,13 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = (IsAdmin, )
 
+    def get_object(self):
+        username = self.kwargs.get('pk')
+        print(self.kwargs)
+        obj = get_object_or_404(User, username=username)
+        self.check_object_permissions(self.request, obj)
+        return obj
+
 
 class UserViewSet(generics.RetrieveAPIView, generics.UpdateAPIView):
     queryset = User.objects.all()
@@ -53,7 +61,9 @@ class UserViewSet(generics.RetrieveAPIView, generics.UpdateAPIView):
 
     def get_object(self):
         user = self.request.user
-        print(user.pk)
         obj = get_object_or_404(User, pk=user.pk)
         self.check_object_permissions(self.request, obj)
         return obj
+
+class TokenObtain(TokenObtainPairView):
+    serializer_class = UserTokenObtainSerializer
