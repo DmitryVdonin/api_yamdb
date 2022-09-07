@@ -3,12 +3,15 @@ from django.urls import include, path
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .views import UserViewSet, AdminUserViewSet, UserCreateAPI
+from .views import UserViewSet, AdminUserViewSet, UserCreateAPI, CategoryViewSet, GenreViewSet, TitleViewSet
 
 app_name = 'reviews'
 
 v1_router = routers.DefaultRouter()
 v1_router.register('users', AdminUserViewSet)
+v1_router.register('categories', CategoryViewSet, basename='categories')
+v1_router.register('titles', TitleViewSet, basename='titles')
+v1_router.register('genries', GenreViewSet, basename='genries')
 
 urlpatterns = [
     path('v1/users/me', UserViewSet.as_view()),
