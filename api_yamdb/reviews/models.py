@@ -3,11 +3,18 @@ from django.db import models
 from .constants import CHARS_PER_STR
 
 
+ROLES = (
+    ('user', 'user'),
+    ('moderator','moderator'),
+    ('admin', 'admin'),
+)
+
 class User(AbstractUser):
     bio = models.TextField(
         'Биография',
         blank=True,
     )
+    role = models.CharField(max_length=10, choices=ROLES, default='user', verbose_name='Роль')
 
 
 CHOICES = (
