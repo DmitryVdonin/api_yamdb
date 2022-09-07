@@ -1,13 +1,12 @@
+from django.core.mail import send_mail
+from django.shortcuts import get_object_or_404
+from rest_framework import generics, viewsets
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from reviews.models import User
 from reviews.token_generator import confirmation_code
-from rest_framework import viewsets, generics, mixins
-from django.core.mail import send_mail
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from django.shortcuts import get_object_or_404
-from rest_framework_simplejwt.views import TokenObtainPairView
 
-from .serializers import UserSerializer, UserCreateSerializer, UserTokenObtainSerializer
 from .permissions import IsAdmin
+from .serializers import UserCreateSerializer, UserSerializer
 
 
 class UserCreateAPI(generics.CreateAPIView):
@@ -29,16 +28,16 @@ class UserCreateAPI(generics.CreateAPIView):
                 user.set_password(password)
                 user.is_active = True
                 user.save()
-                #mail_subject = 'Confirm your email account.'
-                #message = f'user: {user}, password: {password}'
-                #to_email = serializer.data.get('email')
-                #send_mail(
-                    #mail_subject,
-                    #message,
-                    #'from@example.com',
-                    #['to@example.com'],
-                    #fail_silently=False,
-                    #)
+                mail_subject = 'Confirm your email account.'
+                message = f'user: {user}, confirmation_code: {password}'
+                to_email = serializer.data.get('email')
+                send_mail(
+                    mail_subject,
+                    message,
+                    'from@example.com',
+                    [to_email],
+                    fail_silently=False,
+                    )
 
 
 class AdminUserViewSet(viewsets.ModelViewSet):
@@ -54,7 +53,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
         return obj
 
 
-class UserViewSet(generics.RetrieveAPIView, generics.UpdateAPIView):
+class UserViewAPI(generics.RetrieveAPIView, generics.UpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated, )
@@ -64,6 +63,3 @@ class UserViewSet(generics.RetrieveAPIView, generics.UpdateAPIView):
         obj = get_object_or_404(User, pk=user.pk)
         self.check_object_permissions(self.request, obj)
         return obj
-
-class TokenObtain(TokenObtainPairView):
-    serializer_class = UserTokenObtainSerializer
