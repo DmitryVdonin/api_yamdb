@@ -154,4 +154,3 @@ class Comments(models.Model):
 
     def __str__(self):
         return self.text[:CHARS_PER_STR]
-    
