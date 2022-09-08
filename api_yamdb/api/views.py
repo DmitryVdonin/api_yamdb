@@ -8,7 +8,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import (CategorySerializer, GenreSerializer, TitleSerializer,
                           UserSerializer, UserCreateSerializer,
                           ReadOnlyTitleSerializer, ReviewSerializer)
-from .permissions import IsAdmin, IsOwnerOrModeratorOrReadOnly
+from .permissions import IsAdmin, IsOwnerOrModeratorOrReadOnly, IsAdminOrReadOnly
 from reviews.token_generator import confirmation_code
 from reviews.models import Category, Genre, Title, User
 
