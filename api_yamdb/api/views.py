@@ -1,6 +1,3 @@
-
-from reviews.models import Category, Genre, Title, User
-from reviews.token_generator import confirmation_code
 from rest_framework import viewsets, generics, filters
 from rest_framework.decorators import action
 from django.core.mail import send_mail
@@ -11,8 +8,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from .serializers import (CategorySerializer, GenreSerializer, TitleSerializer,
                           UserSerializer, UserCreateSerializer,
                           ReadOnlyTitleSerializer)
-from .permissions import IsAdmin
+from .permissions import IsAdmin, IsOwnerOrModeratorOrReadOnly
 from reviews.token_generator import confirmation_code
+from reviews.models import Category, Genre, Title, User
 
 
 class UserCreateAPI(generics.CreateAPIView):
@@ -89,8 +87,24 @@ class TitleViewSet(viewsets.ModelViewSet):
     permission_classes = IsAdminOrReadOnly,
     filter_backends = DjangoFilterBackend,
     filterset_fields = ['category__slug', 'genre__slug', 'name', 'year']
-
+    
     def get_serializer_class(self):
         if self.action in ("retrieve", "list"):
             return ReadOnlyTitleSerializer
         return TitleSerializer
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    permission_classes = (IsOwnerOrModeratorOrReadOnly,)
+
+    def get_queryset(self):
+        title_id = self.kwargs.get('title_id')
+        title = get_object_or_404(Title, id=title_id)
+        
+        return title.reviews.all()
+
+    def perform_create(self, serializer):
+        title_id = self.kwargs.get('title_id')
+        title = get_object_or_404(Title, id=title_id)
+        serializer.save(author=self.request.user, title_id=title)

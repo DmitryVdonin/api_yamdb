@@ -1,13 +1,13 @@
+import datetime
+
+from django.db.models import Avg
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from reviews.models import Category, Genre, Title, User, Review
-
-from django.db.models import Avg
-
-import datetime
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -34,7 +34,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
         if data.get('username') == 'me':
             raise serializers.ValidationError('Запрещенный username')
         return data
-
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -64,6 +63,7 @@ class UserAuthSerializer(serializers.Serializer):
                 'access': str(refresh.access_token),
             }
         return 'self.get_tokens_for_user(user)'
+
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -129,3 +129,24 @@ class ReadOnlyTitleSerializer(serializers.ModelSerializer):
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field='username',
+        default=serializers.CurrentUserDefault()
+    )
+    title_id = serializers.HiddenField(default=None)
+
+    class Meta:
+        model = Review
+        fields = ('id', 'title_id', 'text', 'author', 'score', 'pub_date')
+        read_only_fields = ('pub_date',)
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Review.objects.all(),
+                fields=('title_id', 'author'),
+                message='Вы уже оставили отзыв об этом произведении',
+            )
+        ]
