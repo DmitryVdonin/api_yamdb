@@ -9,10 +9,6 @@ app_name = 'reviews'
 
 v1_router = routers.DefaultRouter()
 v1_router.register('users', AdminUserViewSet)
-v1_router.register(
-    r'users/(?P<username>[\w.@+-]+)',
-    AdminUserViewSet,
-    basename='users')
 
 urlpatterns = [
     path('v1/users/me/', UserViewAPI.as_view()),

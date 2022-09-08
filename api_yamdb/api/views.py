@@ -44,13 +44,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin, )
-
-    def get_object(self):
-        username = self.kwargs.get('pk')
-        print(self.kwargs)
-        obj = get_object_or_404(User, username=username)
-        self.check_object_permissions(self.request, obj)
-        return obj
+    lookup_field = 'username'
 
 
 class UserViewAPI(generics.RetrieveAPIView, generics.UpdateAPIView):
