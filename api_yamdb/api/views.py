@@ -31,16 +31,6 @@ class UserCreateAPI(generics.CreateAPIView):
                 user.set_password(password)
                 user.is_active = True
                 user.save()
-                #mail_subject = 'Confirm your email account.'
-                #message = f'user: {user}, password: {password}'
-                #to_email = serializer.data.get('email')
-                #send_mail(
-                    #mail_subject,
-                    #message,
-                    #'from@example.com',
-                    #['to@example.com'],
-                    #fail_silently=False,
-                    #)
 
 
 class AdminUserViewSet(viewsets.ModelViewSet):

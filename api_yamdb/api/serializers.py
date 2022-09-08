@@ -59,6 +59,13 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
 
 
+class RatingSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Review
+        fields = ('score')
+
+
 class TitleSerializer(serializers.ModelSerializer):
     genre = serializers.SlugRelatedField(
         slug_field='slug', many=True, queryset=Genre.objects.all()
@@ -66,9 +73,8 @@ class TitleSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
         slug_field='slug', queryset=Category.objects.all()
     )
-    # Добавить rating = среднее значение score из модели Review
-    # не знаю работает ли:
-    raiting = Review.objects.aggregate(Avg('score'))
+    # Получить среднее по полю score модели Review
+    rating = RatingSerializer(read_only=True)
 
     class Meta:
         model = Title
@@ -87,7 +93,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
     def validate_year(self, value):
         now_year = datetime.datetime.now().year
-        if not (now_year > value):
+        if not (now_year >= value):
             raise serializers.ValidationError(
                 'Проверьте год выпуска произведения!')
         return value
