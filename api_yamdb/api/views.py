@@ -4,8 +4,8 @@ from rest_framework import viewsets, generics, mixins
 from django.core.mail import send_mail
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
-from .serializers import CategorySerializer, GenreSerializer, TitleSerializer, UserSerializer, UserCreateSerializer
-from .permissions import IsAdminOrReadOnly, IsAdmin
+from .serializers import CategorySerializer, GenreSerializer, TitleSerializer, UserSerializer, UserCreateSerializer, ReviewSerializer
+from .permissions import IsAdminOrReadOnly, IsAdmin, IsOwnerOrModeratorOrReadOnly
 
 
 class UserCreateAPI(generics.CreateAPIView):
@@ -81,3 +81,18 @@ class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
     # permission_classes = IsAdminOrReadOnly,
 
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    serializer_class = ReviewSerializer
+    permission_classes = (IsOwnerOrModeratorOrReadOnly,)
+
+    def get_queryset(self):
+        title_id = self.kwargs.get('title_id')
+        title = get_object_or_404(Title, id=title_id)
+        
+        return title.reviews.all()
+
+    def perform_create(self, serializer):
+        title_id = self.kwargs.get('title_id')
+        title = get_object_or_404(Title, id=title_id)
+        serializer.save(author=self.request.user, title_id=title)
