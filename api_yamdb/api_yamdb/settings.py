@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_filters',
     'core',
     'reviews',
     'api',
@@ -130,3 +131,4 @@ SIMPLE_JWT = {
 AUTH_USER_MODEL = 'reviews.User'
 
 
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'

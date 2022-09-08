@@ -1,6 +1,7 @@
 from reviews.models import Category, Genre, Title, User
 from reviews.token_generator import confirmation_code
-from rest_framework import viewsets, generics, mixins
+from rest_framework import viewsets, generics, filters
+from rest_framework.decorators import action
 from django.core.mail import send_mail
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
@@ -48,7 +49,11 @@ class AdminUserViewSet(viewsets.ModelViewSet):
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    # permission_classes = IsAdminOrReadOnly,
+    permission_classes = IsAdminOrReadOnly,
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('slug',)
+
+
 
 class UserViewSet(generics.RetrieveAPIView, generics.UpdateAPIView):
     queryset = User.objects.all()
@@ -62,22 +67,18 @@ class UserViewSet(generics.RetrieveAPIView, generics.UpdateAPIView):
         self.check_object_permissions(self.request, obj)
         return obj
 
+
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    # permission_classes = IsAdminOrReadOnly,
+    permission_classes = IsAdminOrReadOnly,
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('slug',)
 
 
-'''
-Добавить фильтры по полю slug категории
-Добавить фильтры по полю slug жанра
-Добавить фильтр по названию произведения
-Добавить фильтр по году
-+ Добавить пагинацию
-+ Пермишен Только админ или чтение
-'''
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    # permission_classes = IsAdminOrReadOnly,
-
+    permission_classes = IsAdminOrReadOnly,
+    filter_backends = (filters.OrderingFilter,)
+    ordering_fields = ('name', 'category', 'genre', 'year',)

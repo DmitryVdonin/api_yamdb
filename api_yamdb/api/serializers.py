@@ -2,8 +2,11 @@ from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from rest_framework.validators import UniqueTogetherValidator
 
-from reviews.models import Category, Genre, Title, User
+from reviews.models import Category, Genre, Title, User, Review
 
+from django.db.models import Avg
+
+import datetime
 
 class UserCreateSerializer(serializers.ModelSerializer):
 
@@ -13,19 +16,19 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     def run_validators(self, value):
         for validator in self.validators:
-            if isinstance(validator, validators.UniqueTogetherValidator):
+            if isinstance(validator, UniqueTogetherValidator):
                 self.validators.remove(validator)
         super(UserCreateSerializer, self).run_validators(value)
 
     def create(self, validated_data):
-        instance, _ = models.User.objects.get_or_create(**validated_data)
+        instance, _ = User.objects.get_or_create(**validated_data)
         return instance
 
     def validate(self, data):
         if data.get('username') == 'me':
             raise serializers.ValidationError('Запрещенный username')
         return data
-        
+
 
 class UserSerializer(serializers.ModelSerializer):
 
@@ -38,7 +41,7 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Запрещенный username')
         return data
 
-        
+
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -63,17 +66,24 @@ class TitleSerializer(serializers.ModelSerializer):
     #     many=True,
     #     queryset=Genre.objects.all()
     # )
-
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
-
     '''
     Добавить rating = среднее значение score из модели Review
-    # from reviews.models import Review
-    # from django.db.models import Avg
-    # queryset=Review.objects.aggregate(Avg('score'))
+    # raiting = Review.objects.aggregate(Avg('score'))
     '''
+    # не знаю работает ли:
+    raiting = Review.objects.aggregate(Avg('score'))
+
 
     class Meta:
         model = Title
-        fields = '__all__'
+        fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category') 
+
+    def validate_year(self, value):
+        now_year = datetime.datetime.now().year
+        if not (now_year > value):
+            raise serializers.ValidationError(
+                'Проверьте год выпуска произведения!')
+        return value
