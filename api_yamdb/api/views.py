@@ -1,15 +1,18 @@
+
 from reviews.models import Category, Genre, Title, User
 from reviews.token_generator import confirmation_code
 from rest_framework import viewsets, generics, filters
 from rest_framework.decorators import action
 from django.core.mail import send_mail
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
+from rest_framework.permissions import AllowAny, IsAuthenticated
+
 from .serializers import (CategorySerializer, GenreSerializer, TitleSerializer,
                           UserSerializer, UserCreateSerializer,
                           ReadOnlyTitleSerializer)
-from .permissions import IsAdminOrReadOnly, IsAdmin
+from .permissions import IsAdmin
+from reviews.token_generator import confirmation_code
 
 
 class UserCreateAPI(generics.CreateAPIView):
@@ -31,12 +34,23 @@ class UserCreateAPI(generics.CreateAPIView):
                 user.set_password(password)
                 user.is_active = True
                 user.save()
+                mail_subject = 'Confirm your email account.'
+                message = f'user: {user}, confirmation_code: {password}'
+                to_email = serializer.data.get('email')
+                send_mail(
+                    mail_subject,
+                    message,
+                    'from@example.com',
+                    [to_email],
+                    fail_silently=False,
+                    )
 
 
 class AdminUserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin, )
+    lookup_field = 'username'
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -48,14 +62,13 @@ class CategoryViewSet(viewsets.ModelViewSet):
     lookup_field = ('slug')
 
 
-class UserViewSet(generics.RetrieveAPIView, generics.UpdateAPIView):
+class UserViewAPI(generics.RetrieveAPIView, generics.UpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated, )
 
     def get_object(self):
         user = self.request.user
-        print(user.pk)
         obj = get_object_or_404(User, pk=user.pk)
         self.check_object_permissions(self.request, obj)
         return obj
