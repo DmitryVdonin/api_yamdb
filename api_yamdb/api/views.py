@@ -3,9 +3,12 @@ from reviews.token_generator import confirmation_code
 from rest_framework import viewsets, generics, filters
 from rest_framework.decorators import action
 from django.core.mail import send_mail
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
-from .serializers import CategorySerializer, GenreSerializer, TitleSerializer, UserSerializer, UserCreateSerializer
+from .serializers import (CategorySerializer, GenreSerializer, TitleSerializer,
+                          UserSerializer, UserCreateSerializer,
+                          ReadOnlyTitleSerializer)
 from .permissions import IsAdminOrReadOnly, IsAdmin
 
 
@@ -52,7 +55,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = IsAdminOrReadOnly,
     filter_backends = (filters.SearchFilter,)
     search_fields = ('slug',)
-
+    lookup_field = ('slug')
 
 
 class UserViewSet(generics.RetrieveAPIView, generics.UpdateAPIView):
@@ -74,11 +77,17 @@ class GenreViewSet(viewsets.ModelViewSet):
     permission_classes = IsAdminOrReadOnly,
     filter_backends = (filters.SearchFilter,)
     search_fields = ('slug',)
+    lookup_field = ('slug')
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     permission_classes = IsAdminOrReadOnly,
-    filter_backends = (filters.OrderingFilter,)
-    ordering_fields = ('name', 'category', 'genre', 'year',)
+    filter_backends = DjangoFilterBackend,
+    filterset_fields = ['category__slug', 'genre__slug', 'name', 'year']
+
+    def get_serializer_class(self):
+        if self.action in ("retrieve", "list"):
+            return ReadOnlyTitleSerializer
+        return TitleSerializer

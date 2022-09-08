@@ -8,6 +8,7 @@ from django.db.models import Avg
 
 import datetime
 
+
 class UserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -34,7 +35,9 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role'
+        )
 
     def validate(self, data):
         if data.get('username') == 'me':
@@ -57,29 +60,30 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    # category = serializers.SlugRelatedField(
-    #     slug_field='slug',
-    #     queryset=Category.objects.all()
-    # )
-    # genre = serializers.SlugRelatedField(
-    #     slug_field='name',
-    #     many=True,
-    #     queryset=Genre.objects.all()
-    # )
-    genre = GenreSerializer(many=True)
-    category = CategorySerializer()
-    '''
-    Добавить rating = среднее значение score из модели Review
-    # raiting = Review.objects.aggregate(Avg('score'))
-    '''
+    genre = serializers.SlugRelatedField(
+        slug_field='slug', many=True, queryset=Genre.objects.all()
+    )
+    category = serializers.SlugRelatedField(
+        slug_field='slug', queryset=Category.objects.all()
+    )
+    # Добавить rating = среднее значение score из модели Review
     # не знаю работает ли:
     raiting = Review.objects.aggregate(Avg('score'))
-
 
     class Meta:
         model = Title
         fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre', 'category') 
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+        )
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Title.objects.all(),
+                fields=('name', 'year'),
+                message=(
+                    'Произведение с таким названием и годом уже существует.'
+                )
+            )
+        ]
 
     def validate_year(self, value):
         now_year = datetime.datetime.now().year
@@ -87,3 +91,14 @@ class TitleSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Проверьте год выпуска произведения!')
         return value
+
+
+class ReadOnlyTitleSerializer(serializers.ModelSerializer):
+    genre = GenreSerializer(many=True)
+    category = CategorySerializer()
+
+    class Meta:
+        model = Title
+        fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+        )
