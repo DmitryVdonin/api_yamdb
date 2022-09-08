@@ -1,9 +1,12 @@
+
 from django.urls import include, path
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView
 
+
 from .serializers import UserAuthSerializer
 from .views import AdminUserViewSet, UserCreateAPI, CategoryViewSet, GenreViewSet, TitleViewSet, AdminUserViewSet, UserViewAPI
+
 
 app_name = 'reviews'
 
@@ -11,7 +14,8 @@ v1_router = routers.DefaultRouter()
 v1_router.register('users', AdminUserViewSet)
 v1_router.register('categories', CategoryViewSet, basename='categories')
 v1_router.register('titles', TitleViewSet, basename='titles')
-v1_router.register('genries', GenreViewSet, basename='genries')
+v1_router.register('genres', GenreViewSet, basename='genres')
+
 
 urlpatterns = [
     path('v1/users/me/', UserViewAPI.as_view()),

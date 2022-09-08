@@ -3,7 +3,11 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from reviews.models import Category, Genre, Title, User
+from reviews.models import Category, Genre, Title, User, Review
+
+from django.db.models import Avg
+
+import datetime
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -30,7 +34,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         if data.get('username') == 'me':
             raise serializers.ValidationError('Запрещенный username')
         return data
-        
+
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -61,7 +65,7 @@ class UserAuthSerializer(serializers.Serializer):
             }
         return 'self.get_tokens_for_user(user)'
 
-        
+
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -76,27 +80,52 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
 
 
+class RatingSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Review
+        fields = ('score')
+
+
 class TitleSerializer(serializers.ModelSerializer):
-    # category = serializers.SlugRelatedField(
-    #     slug_field='slug',
-    #     queryset=Category.objects.all()
-    # )
-    # genre = serializers.SlugRelatedField(
-    #     slug_field='name',
-    #     many=True,
-    #     queryset=Genre.objects.all()
-    # )
-
-    genre = GenreSerializer(many=True)
-    category = CategorySerializer()
-
-    '''
-    Добавить rating = среднее значение score из модели Review
-    # from reviews.models import Review
-    # from django.db.models import Avg
-    # queryset=Review.objects.aggregate(Avg('score'))
-    '''
+    genre = serializers.SlugRelatedField(
+        slug_field='slug', many=True, queryset=Genre.objects.all()
+    )
+    category = serializers.SlugRelatedField(
+        slug_field='slug', queryset=Category.objects.all()
+    )
+    # Получить среднее по полю score модели Review
+    rating = RatingSerializer(read_only=True)
 
     class Meta:
         model = Title
-        fields = '__all__'
+        fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+        )
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Title.objects.all(),
+                fields=('name', 'year'),
+                message=(
+                    'Произведение с таким названием и годом уже существует.'
+                )
+            )
+        ]
+
+    def validate_year(self, value):
+        now_year = datetime.datetime.now().year
+        if not (now_year >= value):
+            raise serializers.ValidationError(
+                'Проверьте год выпуска произведения!')
+        return value
+
+
+class ReadOnlyTitleSerializer(serializers.ModelSerializer):
+    genre = GenreSerializer(many=True)
+    category = CategorySerializer()
+
+    class Meta:
+        model = Title
+        fields = (
+            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+        )
