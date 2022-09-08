@@ -4,7 +4,7 @@ from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .serializers import UserAuthSerializer
-from .views import AdminUserViewSet, UserCreateAPI, CategoryViewSet, GenreViewSet, TitleViewSet, AdminUserViewSet, UserViewAPI, ReviewViewSet
+from .views import AdminUserViewSet, UserCreateAPI, CategoryViewSet, GenreViewSet, TitleViewSet, UserViewAPI, ReviewViewSet, CommentsViewSet
 
 app_name = 'reviews'
 
@@ -12,8 +12,16 @@ v1_router = routers.DefaultRouter()
 v1_router.register('users', AdminUserViewSet)
 v1_router.register('categories', CategoryViewSet, basename='categories')
 v1_router.register('titles', TitleViewSet, basename='titles')
-v1_router.register(r'titles/(?P<title_id>\d+)/reviews', ReviewViewSet, basename='reviews')
 v1_router.register('genres', GenreViewSet, basename='genres')
+v1_router.register(
+    r'titles/(?P<title_id>\d+)/reviews',
+    ReviewViewSet, basename='reviews',
+)
+v1_router.register(
+    r'titles/(?P<title_id>\d+)/reviews/(?P<review_id>\d+)/comments',
+    CommentsViewSet, basename='comments',
+)
+
 
 urlpatterns = [
     path('v1/users/me/', UserViewAPI.as_view()),

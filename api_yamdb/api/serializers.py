@@ -7,7 +7,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from reviews.models import Category, Genre, Title, User, Review
+from reviews.models import Category, Genre, Title, User, Review, Comments
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -80,11 +80,13 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
 
 
-class RatingSerializer(serializers.ModelSerializer):
+#class RatingSerializer(serializers.ModelSerializer):
+#
+#    class Meta:
+#        model = Review
+#        fields = ('rating')
 
-    class Meta:
-        model = Review
-        fields = ('score')
+        
 
 
 class TitleSerializer(serializers.ModelSerializer):
@@ -94,13 +96,11 @@ class TitleSerializer(serializers.ModelSerializer):
     category = serializers.SlugRelatedField(
         slug_field='slug', queryset=Category.objects.all()
     )
-    # Получить среднее по полю score модели Review
-    rating = RatingSerializer(read_only=True)
 
     class Meta:
         model = Title
         fields = (
-            'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
+            'id', 'name', 'year', 'description', 'genre', 'category'
         )
         validators = [
             UniqueTogetherValidator(
@@ -111,6 +111,7 @@ class TitleSerializer(serializers.ModelSerializer):
                 )
             )
         ]
+
 
     def validate_year(self, value):
         now_year = datetime.datetime.now().year
@@ -123,12 +124,16 @@ class TitleSerializer(serializers.ModelSerializer):
 class ReadOnlyTitleSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
+    new = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
+
+    def get_rating(self, obj):
+        return round(Title.objects.get(id=obj.id).reviews.aggregate(Avg('score'))['score__avg'])
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -150,3 +155,17 @@ class ReviewSerializer(serializers.ModelSerializer):
                 message='Вы уже оставили отзыв об этом произведении',
             )
         ]
+
+
+class CommentsSerializer(serializers.ModelSerializer):
+
+    author = serializers.SlugRelatedField(
+        read_only=True, slug_field='username',
+        default=serializers.CurrentUserDefault()
+    )
+    review_id = serializers.HiddenField(default=None)
+
+    class Meta:
+        model = Comments
+        fields = ('id', 'review_id', 'text', 'author', 'pub_date')
+        read_only_fields = ('pub_date',)
