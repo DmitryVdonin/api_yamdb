@@ -1,21 +1,13 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-from .constants import CHARS_PER_STR
 
+from .constants import CHARS_PER_STR
 
 ROLES = (
     ('user', 'user'),
-    ('moderator','moderator'),
+    ('moderator', 'moderator'),
     ('admin', 'admin'),
 )
-
-class User(AbstractUser):
-    bio = models.TextField(
-        'Биография',
-        blank=True,
-    )
-    role = models.CharField(max_length=10, choices=ROLES, default='user', verbose_name='Роль')
-
 
 CHOICES = (
     (1, 1),
@@ -30,10 +22,21 @@ CHOICES = (
     (10, 10),
 )
 
+class User(AbstractUser):
+    bio = models.TextField(
+        'Биография',
+        blank=True,
+    )
+    role = models.CharField(
+        max_length=10, choices=ROLES,
+        default='user', verbose_name='Роль'
+        )
+    email = models.EmailField(max_length=50, unique=True)
 
-# Для слаг добавить фильтр на регексп? в редоке посмотреть
+
+
 class Category(models.Model):
-    """Модель Category(Категория)."""
+    """Категории (типы) произведений."""
 
     name = models.CharField(
         max_length=256,
@@ -49,9 +52,8 @@ class Category(models.Model):
         return self.name
 
 
-# Для слаг добавить фильтр на регексп? в редоке посмотреть
 class Genre(models.Model):
-    """Модель Genre(Жанр)."""
+    """Категории жанров."""
 
     name = models.CharField(
         max_length=256,
@@ -68,11 +70,12 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    """Модель Title(Произведение)."""
+    """Произведения, к которым пишут отзывы
+    (определённый фильм, книга или песенка)."""
 
     name = models.CharField(
         max_length=256,
-        verbose_name='Title',
+        verbose_name='Title'
     )
     year = models.IntegerField(
         verbose_name='Year'
@@ -80,6 +83,7 @@ class Title(models.Model):
     description = models.TextField(
         verbose_name='Description',
         null=True,
+        # blank=True определяет, будет ли поле обязательным в формах
         blank=True
     )
     category = models.ForeignKey(
@@ -96,6 +100,7 @@ class Title(models.Model):
     )
     rating = models.IntegerField(
         verbose_name='Rating',
+        # null=True установит значение поля в NULL, т.е. нет данных
         null=True,
         default=None
     )

@@ -1,11 +1,16 @@
-from reviews.models import Category, Genre, Title, User
-from reviews.token_generator import confirmation_code
-from rest_framework import viewsets, generics, mixins
+from rest_framework import viewsets, generics, filters
+from rest_framework.decorators import action
 from django.core.mail import send_mail
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-from .serializers import CategorySerializer, GenreSerializer, TitleSerializer, UserSerializer, UserCreateSerializer, ReviewSerializer
-from .permissions import IsAdminOrReadOnly, IsAdmin, IsOwnerOrModeratorOrReadOnly
+from rest_framework.permissions import AllowAny, IsAuthenticated
+
+from .serializers import (CategorySerializer, GenreSerializer, TitleSerializer,
+                          UserSerializer, UserCreateSerializer,
+                          ReadOnlyTitleSerializer)
+from .permissions import IsAdmin, IsOwnerOrModeratorOrReadOnly
+from reviews.token_generator import confirmation_code
+from reviews.models import Category, Genre, Title, User
 
 
 class UserCreateAPI(generics.CreateAPIView):
@@ -27,59 +32,66 @@ class UserCreateAPI(generics.CreateAPIView):
                 user.set_password(password)
                 user.is_active = True
                 user.save()
-                #mail_subject = 'Confirm your email account.'
-                #message = f'user: {user}, password: {password}'
-                #to_email = serializer.data.get('email')
-                #send_mail(
-                    #mail_subject,
-                    #message,
-                    #'from@example.com',
-                    #['to@example.com'],
-                    #fail_silently=False,
-                    #)
+                mail_subject = 'Confirm your email account.'
+                message = f'user: {user}, confirmation_code: {password}'
+                to_email = serializer.data.get('email')
+                send_mail(
+                    mail_subject,
+                    message,
+                    'from@example.com',
+                    [to_email],
+                    fail_silently=False,
+                    )
 
 
 class AdminUserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin, )
+    lookup_field = 'username'
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    # permission_classes = IsAdminOrReadOnly,
+    permission_classes = IsAdminOrReadOnly,
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('slug',)
+    lookup_field = ('slug')
 
-class UserViewSet(generics.RetrieveAPIView, generics.UpdateAPIView):
+
+class UserViewAPI(generics.RetrieveAPIView, generics.UpdateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated, )
 
     def get_object(self):
         user = self.request.user
-        print(user.pk)
         obj = get_object_or_404(User, pk=user.pk)
         self.check_object_permissions(self.request, obj)
         return obj
 
+
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    # permission_classes = IsAdminOrReadOnly,
+    permission_classes = IsAdminOrReadOnly,
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('slug',)
+    lookup_field = ('slug')
 
 
-'''
-Добавить фильтры по полю slug категории
-Добавить фильтры по полю slug жанра
-Добавить фильтр по названию произведения
-Добавить фильтр по году
-+ Добавить пагинацию
-+ Пермишен Только админ или чтение
-'''
 class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
-    # permission_classes = IsAdminOrReadOnly,
+    permission_classes = IsAdminOrReadOnly,
+    filter_backends = DjangoFilterBackend,
+    filterset_fields = ['category__slug', 'genre__slug', 'name', 'year']
+    
+    def get_serializer_class(self):
+        if self.action in ("retrieve", "list"):
+            return ReadOnlyTitleSerializer
+        return TitleSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
