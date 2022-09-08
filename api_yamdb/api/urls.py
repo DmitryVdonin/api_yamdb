@@ -4,7 +4,7 @@ from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .serializers import UserAuthSerializer
-from .views import AdminUserViewSet, UserCreateAPI, CategoryViewSet, GenreViewSet, TitleViewSet, AdminUserViewSet, UserViewAPI
+from .views import AdminUserViewSet, UserCreateAPI, CategoryViewSet, GenreViewSet, TitleViewSet, AdminUserViewSet, UserViewAPI, ReviewViewSet
 
 app_name = 'reviews'
 
