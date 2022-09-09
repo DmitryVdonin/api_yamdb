@@ -13,6 +13,8 @@ from .serializers import (CategorySerializer, CommentsSerializer,
                           ReviewSerializer, TitleSerializer,
                           UserCreateSerializer, UserSerializer)
 
+from .mixins import CreateListDestroyViewSet
+
 
 class UserCreateAPI(generics.CreateAPIView):
     queryset = User.objects.all()
@@ -52,12 +54,12 @@ class AdminUserViewSet(viewsets.ModelViewSet):
     lookup_field = 'username'
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class CategoryViewSet(CreateListDestroyViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = IsAdminOrReadOnly,
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('slug',)
+    search_fields = ('name',)
     lookup_field = ('slug')
 
 
@@ -73,12 +75,12 @@ class UserViewAPI(generics.RetrieveAPIView, generics.UpdateAPIView):
         return obj
 
 
-class GenreViewSet(viewsets.ModelViewSet):
+class GenreViewSet(CreateListDestroyViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = IsAdminOrReadOnly,
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('slug',)
+    search_fields = ('name',)
     lookup_field = ('slug')
 
 
@@ -86,8 +88,21 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     permission_classes = IsAdminOrReadOnly,
-    filter_backends = DjangoFilterBackend,
-    filterset_fields = ['category__slug', 'genre__slug', 'name', 'year']
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('name', 'year')
+
+    def get_queryset(self):
+        queryset = Title.objects.all()
+
+        category = self.request.query_params.get('category')
+        if category is not None:
+            queryset = queryset.filter(category__slug=category)
+
+        genre = self.request.query_params.get('genre')
+        if genre is not None:
+            queryset = queryset.filter(genre__slug=genre)
+
+        return queryset
 
     def get_serializer_class(self):
         if self.action in ("retrieve", "list"):
