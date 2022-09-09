@@ -1,15 +1,17 @@
-from rest_framework import viewsets, generics, filters
 from django.core.mail import send_mail
-from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, generics, viewsets
 from rest_framework.permissions import AllowAny, IsAuthenticated
-
-from .serializers import (CategorySerializer, CommentsSerializer, GenreSerializer, TitleSerializer,
-                          UserSerializer, UserCreateSerializer,
-                          ReadOnlyTitleSerializer, ReviewSerializer)
-from .permissions import IsAdmin, IsOwnerOrModeratorOrReadOnly, IsAdminOrReadOnly
+from reviews.models import Category, Genre, Review, Title, User
 from reviews.token_generator import confirmation_code
-from reviews.models import Category, Genre, Title, User, Review
+
+from .permissions import (IsAdmin, IsAdminOrReadOnly,
+                          IsOwnerOrModeratorOrReadOnly)
+from .serializers import (CategorySerializer, CommentsSerializer,
+                          GenreSerializer, ReadOnlyTitleSerializer,
+                          ReviewSerializer, TitleSerializer,
+                          UserCreateSerializer, UserSerializer)
 
 
 class UserCreateAPI(generics.CreateAPIView):
@@ -40,7 +42,7 @@ class UserCreateAPI(generics.CreateAPIView):
                     'from@example.com',
                     [to_email],
                     fail_silently=False,
-                    )
+                )
 
 
 class AdminUserViewSet(viewsets.ModelViewSet):

@@ -1,13 +1,13 @@
 import datetime
 
-from django.db.models import Avg
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from reviews.models import Category, Genre, Title, User, Review, Comments
+from reviews.models import Category, Comments, Genre, Review, Title, User
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -17,7 +17,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
             try:
                 obj = User.objects.get(
                     username=self.initial_data.get('username')
-                    )
+                )
             except (ObjectDoesNotExist, MultipleObjectsReturned):
                 return super().is_valid(raise_exception)
             else:
@@ -43,7 +43,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = (
             'username', 'email', 'first_name',
             'last_name', 'bio', 'role'
-            )
+        )
 
     def validate(self, data):
         if data.get('username') == 'me':
@@ -65,7 +65,6 @@ class UserAuthSerializer(serializers.Serializer):
         return 'self.get_tokens_for_user(user)'
 
 
-
 class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -80,16 +79,8 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
 
 
-#class RatingSerializer(serializers.ModelSerializer):
-#
-#    class Meta:
-#        model = Review
-#        fields = ('rating')
-
-        
-
-
 class TitleSerializer(serializers.ModelSerializer):
+
     genre = serializers.SlugRelatedField(
         slug_field='slug', many=True, queryset=Genre.objects.all()
     )
@@ -112,7 +103,6 @@ class TitleSerializer(serializers.ModelSerializer):
             )
         ]
 
-
     def validate_year(self, value):
         now_year = datetime.datetime.now().year
         if not (now_year >= value):
@@ -133,7 +123,11 @@ class ReadOnlyTitleSerializer(serializers.ModelSerializer):
         )
 
     def get_rating(self, obj):
-        return round(Title.objects.get(id=obj.id).reviews.aggregate(Avg('score'))['score__avg'])
+        return round(
+            Title.objects.get(id=obj.id).reviews.aggregate(
+                Avg('score')
+            )['score__avg']
+        )
 
 
 class ReviewSerializer(serializers.ModelSerializer):
