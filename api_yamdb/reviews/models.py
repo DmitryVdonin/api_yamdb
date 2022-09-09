@@ -9,7 +9,7 @@ ROLES = (
     ('admin', 'admin'),
 )
 
-CHOICES = (
+SCORE_CHOICES = (
     (1, 1),
     (2, 2),
     (3, 3),
@@ -22,7 +22,9 @@ CHOICES = (
     (10, 10),
 )
 
+
 class User(AbstractUser):
+
     bio = models.TextField(
         'Биография',
         blank=True,
@@ -30,9 +32,8 @@ class User(AbstractUser):
     role = models.CharField(
         max_length=10, choices=ROLES,
         default='user', verbose_name='Роль'
-        )
+    )
     email = models.EmailField(max_length=50, unique=True)
-
 
 
 class Category(models.Model):
@@ -141,7 +142,7 @@ class Review(models.Model):
         verbose_name='автор_отзыва',
         related_name='reviews',
     )
-    score = models.IntegerField(choices=CHOICES, verbose_name='Рейтинг')
+    score = models.IntegerField(choices=SCORE_CHOICES, verbose_name='Рейтинг')
     pub_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата')
 
     def __str__(self):
