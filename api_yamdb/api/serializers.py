@@ -125,7 +125,10 @@ class ReadOnlyTitleSerializer(serializers.ModelSerializer):
     def get_rating(self, obj):
         rating = Title.objects.get(id=obj.id).reviews.aggregate(
                  Avg('score'))['score__avg']
-        return round(rating, 2)
+        if rating is None:
+            return None
+        else:
+            return round(rating)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
