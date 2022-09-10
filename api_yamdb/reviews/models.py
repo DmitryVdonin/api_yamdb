@@ -131,7 +131,7 @@ class GenreTitle(models.Model):
 class Review(models.Model):
     """Модель Review(отзыв)."""
 
-    title_id = models.ForeignKey(
+    title = models.ForeignKey(
         Title, on_delete=models.CASCADE,
         verbose_name='Произведение',
         related_name='reviews',
@@ -145,6 +145,14 @@ class Review(models.Model):
     score = models.IntegerField(choices=SCORE_CHOICES, verbose_name='Рейтинг')
     pub_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата')
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title_id', 'author'],
+                name='unique_review_per_title',
+            ),
+        ]
+
     def __str__(self):
         return self.text[:CHARS_PER_STR]
 
@@ -152,7 +160,7 @@ class Review(models.Model):
 class Comments(models.Model):
     """Модель Comments(комментарии)."""
 
-    review_id = models.ForeignKey(
+    review = models.ForeignKey(
         Review, on_delete=models.CASCADE,
         verbose_name='Отзыв',
         related_name='comments'

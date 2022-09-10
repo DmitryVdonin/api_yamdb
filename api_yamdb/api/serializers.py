@@ -114,7 +114,7 @@ class TitleSerializer(serializers.ModelSerializer):
 class ReadOnlyTitleSerializer(serializers.ModelSerializer):
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
-    new = serializers.SerializerMethodField()
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Title
@@ -123,11 +123,13 @@ class ReadOnlyTitleSerializer(serializers.ModelSerializer):
         )
 
     def get_rating(self, obj):
-        return round(
-            Title.objects.get(id=obj.id).reviews.aggregate(
-                Avg('score')
-            )['score__avg']
-        )
+        avg_rating = Title.objects.get(id=obj.id).reviews.aggregate(
+            Avg('score')
+        )['score__avg']
+        if avg_rating:
+            return round(avg_rating)
+        else:
+            return None
 
 
 class ReviewSerializer(serializers.ModelSerializer):
@@ -136,19 +138,22 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only=True, slug_field='username',
         default=serializers.CurrentUserDefault()
     )
-    title_id = serializers.HiddenField(default=None)
 
     class Meta:
         model = Review
-        fields = ('id', 'title_id', 'text', 'author', 'score', 'pub_date')
+        fields = ('id', 'text', 'author', 'score', 'pub_date')
         read_only_fields = ('pub_date',)
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Review.objects.all(),
-                fields=('title_id', 'author'),
-                message='Вы уже оставили отзыв об этом произведении',
-            )
-        ]
+
+    def validate(self, attrs):
+        if self.context['request'].method == 'POST':
+            user = self.context['request'].user
+            title_id = self.context.get('view').kwargs['title_id']
+            if Review.objects.filter(author=user, title_id=title_id).exists():
+                raise serializers.ValidationError(
+                    'Вы уже оставляли отзыв об этом произведении'
+                )
+
+        return attrs
 
 
 class CommentsSerializer(serializers.ModelSerializer):
@@ -157,9 +162,8 @@ class CommentsSerializer(serializers.ModelSerializer):
         read_only=True, slug_field='username',
         default=serializers.CurrentUserDefault()
     )
-    review_id = serializers.HiddenField(default=None)
 
     class Meta:
         model = Comments
-        fields = ('id', 'review_id', 'text', 'author', 'pub_date')
+        fields = ('id', 'text', 'author', 'pub_date')
         read_only_fields = ('pub_date',)
