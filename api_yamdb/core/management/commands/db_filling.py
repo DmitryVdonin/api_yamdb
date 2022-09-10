@@ -13,10 +13,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **kwargs):
 
-        def db_fill(
-            csv_file, model, fk_1=None, linked_model_1=None,
-            fk_2=None, linked_model_2=None
-        ):
+        def db_fill(csv_file, model, fk_index=None, linked_model=None):
             with open(csv_file, encoding='utf-8') as r_file:
                 file_reader = csv.reader(r_file, delimiter=",")
                 first_line = True
@@ -24,13 +21,9 @@ class Command(BaseCommand):
                     if first_line:
                         fields = row
                     else:
-                        if fk_1:
-                            row[fk_1] = linked_model_1.objects.get(
-                                id=row[fk_1]
-                            )
-                        if fk_2:
-                            row[fk_2] = linked_model_2.objects.get(
-                                id=row[fk_2]
+                        if fk_index:
+                            row[fk_index] = linked_model.objects.get(
+                                id=row[fk_index]
                             )
 
                         obj = model(
@@ -44,5 +37,5 @@ class Command(BaseCommand):
         db_fill('static/data/titles.csv', Title, 3, Category)
         db_fill('static/data/genre_title.csv', GenreTitle)
         db_fill('static/data/users.csv', User)
-        db_fill('static/data/review.csv', Review, 1, Title, 3, User)
-        db_fill('static/data/comments.csv', Comments, 1, Review, 3, User)
+        db_fill('static/data/review.csv', Review, 3, User)
+        db_fill('static/data/comments.csv', Comments, 3, User)
