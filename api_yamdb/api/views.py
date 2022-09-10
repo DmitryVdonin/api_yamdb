@@ -89,10 +89,14 @@ class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
     permission_classes = IsAdminOrReadOnly,
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('name', 'year')
+    filterset_fields = ('year',)
 
     def get_queryset(self):
         queryset = Title.objects.all()
+
+        name = self.request.query_params.get('name')
+        if name is not None:
+            queryset = queryset.filter(name__startswith=name)
 
         category = self.request.query_params.get('category')
         if category is not None:
