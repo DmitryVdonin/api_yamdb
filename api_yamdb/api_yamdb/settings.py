@@ -16,13 +16,16 @@ ALLOWED_HOSTS = ['*']
 # Application definition
 
 INSTALLED_APPS = [
-    'reviews',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'django_filters',
+    'core',
+    'reviews',
     'api',
 ]
 
@@ -105,7 +108,6 @@ STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static/'),)
 
-AUTH_USER_MODEL = 'reviews.User'
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -119,9 +121,14 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-   'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
-   'AUTH_HEADER_TYPES': ('Bearer',),
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
+    'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
+
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
+
+AUTH_USER_MODEL = 'reviews.User'

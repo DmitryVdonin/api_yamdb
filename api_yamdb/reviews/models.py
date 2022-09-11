@@ -9,20 +9,7 @@ ROLES = (
     ('admin', 'admin'),
 )
 
-
-class User(AbstractUser):
-    bio = models.TextField(
-        'Биография',
-        blank=True,
-    )
-    role = models.CharField(
-        max_length=10, choices=ROLES,
-        default='user', verbose_name='Роль'
-        )
-    email = models.EmailField(max_length=50, unique=True)
-
-
-CHOICES = (
+SCORE_CHOICES = (
     (1, 1),
     (2, 2),
     (3, 3),
@@ -36,8 +23,21 @@ CHOICES = (
 )
 
 
+class User(AbstractUser):
+
+    bio = models.TextField(
+        'Биография',
+        blank=True,
+    )
+    role = models.CharField(
+        max_length=10, choices=ROLES,
+        default='user', verbose_name='Роль'
+    )
+    email = models.EmailField(max_length=50, unique=True)
+
+
 class Category(models.Model):
-    """Модель Category(Категория)."""
+    """Категории (типы) произведений."""
 
     name = models.CharField(
         max_length=256,
@@ -46,7 +46,7 @@ class Category(models.Model):
     slug = models.SlugField(
         verbose_name='Id_Category',
         unique=True,
-        max_length=256
+        max_length=50
     )
 
     def __str__(self):
@@ -54,7 +54,7 @@ class Category(models.Model):
 
 
 class Genre(models.Model):
-    """Модель Genre(Жанр)."""
+    """Категории жанров."""
 
     name = models.CharField(
         max_length=256,
@@ -63,7 +63,7 @@ class Genre(models.Model):
     slug = models.SlugField(
         verbose_name='Id_Genre',
         unique=True,
-        max_length=256
+        max_length=50
     )
 
     def __str__(self):
@@ -71,11 +71,12 @@ class Genre(models.Model):
 
 
 class Title(models.Model):
-    """Модель Title(Произведение)."""
+    """Произведения, к которым пишут отзывы
+    (определённый фильм, книга или песенка)."""
 
     name = models.CharField(
         max_length=256,
-        verbose_name='Title',
+        verbose_name='Title'
     )
     year = models.IntegerField(
         verbose_name='Year'
@@ -83,6 +84,7 @@ class Title(models.Model):
     description = models.TextField(
         verbose_name='Description',
         null=True,
+        # blank=True определяет, будет ли поле обязательным в формах
         blank=True
     )
     category = models.ForeignKey(
@@ -96,6 +98,12 @@ class Title(models.Model):
         Genre,
         verbose_name='Genre',
         through='GenreTitle'
+    )
+    rating = models.IntegerField(
+        verbose_name='Rating',
+        # null=True установит значение поля в NULL, т.е. нет данных
+        null=True,
+        default=None
     )
 
     def __str__(self):
@@ -123,7 +131,7 @@ class GenreTitle(models.Model):
 class Review(models.Model):
     """Модель Review(отзыв)."""
 
-    title_id = models.ForeignKey(
+    title = models.ForeignKey(
         Title, on_delete=models.CASCADE,
         verbose_name='Произведение',
         related_name='reviews',
@@ -134,8 +142,16 @@ class Review(models.Model):
         verbose_name='автор_отзыва',
         related_name='reviews',
     )
-    score = models.IntegerField(choices=CHOICES, verbose_name='Рейтинг')
+    score = models.IntegerField(choices=SCORE_CHOICES, verbose_name='Рейтинг')
     pub_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата')
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['title_id', 'author'],
+                name='unique_review_per_title',
+            ),
+        ]
 
     def __str__(self):
         return self.text[:CHARS_PER_STR]
@@ -144,7 +160,7 @@ class Review(models.Model):
 class Comments(models.Model):
     """Модель Comments(комментарии)."""
 
-    review_id = models.ForeignKey(
+    review = models.ForeignKey(
         Review, on_delete=models.CASCADE,
         verbose_name='Отзыв',
         related_name='comments'
@@ -159,4 +175,3 @@ class Comments(models.Model):
 
     def __str__(self):
         return self.text[:CHARS_PER_STR]
-    
