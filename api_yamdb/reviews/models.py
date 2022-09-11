@@ -99,12 +99,6 @@ class Title(models.Model):
         verbose_name='Genre',
         through='GenreTitle'
     )
-    rating = models.IntegerField(
-        verbose_name='Rating',
-        # null=True установит значение поля в NULL, т.е. нет данных
-        null=True,
-        default=None
-    )
 
     def __str__(self):
         return self.name

@@ -17,6 +17,10 @@ pip install -r requirements.txt
 ```
  python3.manage.py migtate (windows: py.manage.py migtate)
  ```
+- Перенесите в базу данных тестовые данные из csv файлов, используя команду
+```
+ python3.manage.py db_filling (windows: py.manage.py db_filling)
+ ```
 - Запустите сервер разработчика. В папке с файлом manage.py выполните команду:
 ```
 python3 manage.py runserver (windows: py manage.py runserver)
