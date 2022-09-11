@@ -8,6 +8,7 @@ from .views import (AdminUserViewSet, CategoryViewSet, CommentsViewSet,
                     GenreViewSet, ReviewViewSet, TitleViewSet, UserViewAPI,
                     signup)
 
+
 app_name = 'reviews'
 
 v1_router = routers.DefaultRouter()
@@ -31,7 +32,7 @@ urlpatterns = [
         'v1/auth/token/',
         TokenObtainPairView.as_view(serializer_class=UserAuthSerializer),
         name='token_obtain_pair'
-        ),
+    ),
     path('v1/auth/signup/', signup),
     path('v1/', include(v1_router.urls)),
 ]
