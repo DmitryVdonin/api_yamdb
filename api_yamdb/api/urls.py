@@ -5,9 +5,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .serializers import UserAuthSerializer
 from .views import (AdminUserViewSet, CategoryViewSet, CommentsViewSet,
-                    GenreViewSet, ReviewViewSet, signup, TitleViewSet,
-                    UserViewAPI)
-
+                    GenreViewSet, ReviewViewSet, TitleViewSet, UserViewAPI,
+                    signup)
 
 app_name = 'reviews'
 

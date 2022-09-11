@@ -30,6 +30,7 @@ class Command(BaseCommand):
                             **{fields[i]: row[i] for i in range(len(fields))}
                         )
                         obj.save()
+
                     first_line = False
 
         db_fill('static/data/category.csv', Category)

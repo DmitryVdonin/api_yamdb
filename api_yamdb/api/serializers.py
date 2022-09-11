@@ -6,7 +6,6 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.response import Response
 
 from reviews.models import Category, Comments, Genre, Review, Title, User
 
@@ -20,11 +19,14 @@ class UserCreateSerializer(serializers.ModelSerializer):
                     username=self.initial_data.get('username')
                 )
             except (ObjectDoesNotExist, MultipleObjectsReturned):
+
                 return super().is_valid(raise_exception)
             else:
                 self.instance = obj
+
                 return super().is_valid(raise_exception)
         else:
+
             return super().is_valid(raise_exception)
 
     class Meta:
@@ -34,6 +36,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data.get('username') == 'me':
             raise serializers.ValidationError('Запрещенный username')
+
         return data
 
 
@@ -49,6 +52,7 @@ class UserSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data.get('username') == 'me':
             raise serializers.ValidationError('Запрещенный username')
+
         return data
 
 
@@ -63,7 +67,7 @@ class UserAuthSerializer(serializers.Serializer):
             return {
                 'access': str(refresh.access_token),
             }
-            
+
         raise serializers.ValidationError('This field must be an even number.')
 
 
@@ -110,6 +114,7 @@ class TitleSerializer(serializers.ModelSerializer):
         if not (now_year >= value):
             raise serializers.ValidationError(
                 'Проверьте год выпуска произведения!')
+
         return value
 
 
@@ -129,12 +134,15 @@ class ReadOnlyTitleSerializer(serializers.ModelSerializer):
             Avg('score')
         )['score__avg']
         if avg_rating:
+
             return round(avg_rating)
         else:
+
             return None
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Review."""
 
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username',
@@ -159,6 +167,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
 
 class CommentsSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Comments."""
 
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username',

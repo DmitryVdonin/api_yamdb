@@ -3,6 +3,7 @@ from django.db import models
 
 from .constants import CHARS_PER_STR
 
+
 ROLES = (
     ('user', 'user'),
     ('moderator', 'moderator'),
@@ -84,7 +85,6 @@ class Title(models.Model):
     description = models.TextField(
         verbose_name='Description',
         null=True,
-        # blank=True определяет, будет ли поле обязательным в формах
         blank=True
     )
     category = models.ForeignKey(

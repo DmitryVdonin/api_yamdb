@@ -1,45 +1,46 @@
-from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
 from rest_framework import filters, generics, viewsets
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from reviews.models import Category, Genre, Review, Title, User
+from rest_framework.response import Response
 
+from reviews.models import Category, Genre, Review, Title, User
 from reviews.token_generator import confirmation_code
+from .mixins import CreateListDestroyViewSet
 from .permissions import (IsAdmin, IsAdminOrReadOnly,
                           IsOwnerOrModeratorOrReadOnly)
 from .serializers import (CategorySerializer, CommentsSerializer,
                           GenreSerializer, ReadOnlyTitleSerializer,
                           ReviewSerializer, TitleSerializer,
                           UserCreateSerializer, UserSerializer)
-from .mixins import CreateListDestroyViewSet
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def signup(request): 
+def signup(request):
     serializer = UserCreateSerializer(data=request.data)
     if serializer.is_valid():
         username = serializer.validated_data.get('username')
         email = serializer.validated_data.get('email')
-        print(username)
         if User.objects.filter(username=username).exists():
             user = User.objects.get(username=username)
             if user.email != email:
+
                 return Response(serializer.errors, status=400)
         else:
             user = serializer.save()
+
         password = confirmation_code.make_token(user)
-        print(password)
         user.set_password(password)
         user.is_active = True
         user.save()
         mail_subject = 'Confirm your email account.'
         message = f'user: {user}, confirmation_code: {password}'
         user.email_user(mail_subject, message)
+
         return Response(serializer.data, status=200)
+
     return Response(serializer.errors, status=400)
 
 
@@ -70,8 +71,9 @@ class UserViewAPI(generics.RetrieveAPIView, generics.UpdateAPIView):
         user = self.request.user
         obj = get_object_or_404(User, pk=user.pk)
         self.check_object_permissions(self.request, obj)
+
         return obj
-    
+
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         data = request.data
@@ -126,10 +128,13 @@ class TitleViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ("retrieve", "list"):
             return ReadOnlyTitleSerializer
+
         return TitleSerializer
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    """Передает объекты модели Review."""
+
     serializer_class = ReviewSerializer
     permission_classes = (IsOwnerOrModeratorOrReadOnly,)
 
@@ -146,6 +151,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentsViewSet(viewsets.ModelViewSet):
+    """Передает объекты модели omments."""
+
     serializer_class = CommentsSerializer
     permission_classes = (IsOwnerOrModeratorOrReadOnly,)
 
