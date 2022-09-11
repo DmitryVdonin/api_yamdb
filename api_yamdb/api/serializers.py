@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.response import Response
 
 from reviews.models import Category, Comments, Genre, Review, Title, User
 
@@ -62,7 +63,8 @@ class UserAuthSerializer(serializers.Serializer):
             return {
                 'access': str(refresh.access_token),
             }
-        return 'self.get_tokens_for_user(user)'
+            
+        raise serializers.ValidationError('This field must be an even number.')
 
 
 class CategorySerializer(serializers.ModelSerializer):
