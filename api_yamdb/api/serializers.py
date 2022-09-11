@@ -72,6 +72,7 @@ class UserAuthSerializer(serializers.Serializer):
 
 
 class CategorySerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Category."""
 
     class Meta:
         model = Category
@@ -79,6 +80,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class GenreSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Genre."""
 
     class Meta:
         model = Genre
@@ -86,6 +88,7 @@ class GenreSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Title."""
 
     genre = serializers.SlugRelatedField(
         slug_field='slug', many=True, queryset=Genre.objects.all()
@@ -119,6 +122,7 @@ class TitleSerializer(serializers.ModelSerializer):
 
 
 class ReadOnlyTitleSerializer(serializers.ModelSerializer):
+    """Сериализатор для модели Title."""
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
     rating = serializers.SerializerMethodField()

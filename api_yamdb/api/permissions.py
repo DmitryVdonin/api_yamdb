@@ -20,6 +20,9 @@ class IsAdmin(permissions.BasePermission):
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
+    """Дает разрешение на чтение, добавление, изменения объекта
+     суперпользователю и администратору, а анониму только чтение.
+    """
     def has_permission(self, request, view):
         return (
             request.method in permissions.SAFE_METHODS
