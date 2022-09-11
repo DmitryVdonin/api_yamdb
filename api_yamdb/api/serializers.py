@@ -2,6 +2,7 @@ from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework.response import Response
 
 from reviews.models import User
 
@@ -58,4 +59,4 @@ class UserAuthSerializer(serializers.Serializer):
             return {
                 'access': str(refresh.access_token),
             }
-        return 'self.get_tokens_for_user(user)'
+        raise serializers.ValidationError('This field must be an even number.')
