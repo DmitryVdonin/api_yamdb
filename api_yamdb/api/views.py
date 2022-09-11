@@ -55,6 +55,7 @@ class AdminUserViewSet(viewsets.ModelViewSet):
 
 class CategoryViewSet(CreateListDestroyViewSet):
     """Передает объекты модели Category."""
+
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = IsAdminOrReadOnly,
@@ -95,6 +96,7 @@ class UserViewAPI(generics.RetrieveAPIView, generics.UpdateAPIView):
 
 class GenreViewSet(CreateListDestroyViewSet):
     """Передает объекты модели Genre."""
+
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
     permission_classes = IsAdminOrReadOnly,
@@ -105,6 +107,7 @@ class GenreViewSet(CreateListDestroyViewSet):
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Передает объекты модели Title."""
+
     queryset = Title.objects.all()
     serializer_class = TitleSerializer
     permission_classes = IsAdminOrReadOnly,
@@ -154,7 +157,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentsViewSet(viewsets.ModelViewSet):
-    """Передает объекты модели omments."""
+    """Передает объекты модели Comments."""
 
     serializer_class = CommentsSerializer
     permission_classes = (IsOwnerOrModeratorOrReadOnly,)
