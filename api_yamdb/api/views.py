@@ -16,6 +16,7 @@ from .serializers import (CategorySerializer, CommentsSerializer,
                           GenreSerializer, ReadOnlyTitleSerializer,
                           ReviewSerializer, TitleSerializer,
                           UserCreateSerializer, UserSerializer)
+from .filters import TitleFilter
 
 
 @api_view(['POST'])
@@ -114,25 +115,12 @@ class TitleViewSet(viewsets.ModelViewSet):
     serializer_class = TitleSerializer
     permission_classes = IsAdminOrReadOnly,
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('year',)
+    filterset_class = TitleFilter
 
     def get_queryset(self):
         queryset = Title.objects.annotate(
             rating=Avg('reviews__score')
         )
-
-        name = self.request.query_params.get('name')
-        if name is not None:
-            queryset = queryset.filter(name__startswith=name)
-
-        category = self.request.query_params.get('category')
-        if category is not None:
-            queryset = queryset.filter(category__slug=category)
-
-        genre = self.request.query_params.get('genre')
-        if genre is not None:
-            queryset = queryset.filter(genre__slug=genre)
-
         return queryset
 
     def get_serializer_class(self):

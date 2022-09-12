@@ -1,5 +1,3 @@
-import datetime
-
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
@@ -110,14 +108,6 @@ class TitleSerializer(serializers.ModelSerializer):
                 )
             )
         ]
-
-    def validate_year(self, value):
-        now_year = datetime.datetime.now().year
-        if not (now_year >= value):
-            raise serializers.ValidationError(
-                'Проверьте год выпуска произведения!')
-
-        return value
 
 
 class ReadOnlyTitleSerializer(serializers.ModelSerializer):
