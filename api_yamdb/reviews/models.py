@@ -3,6 +3,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from .constants import CHARS_PER_STR
+from .validators import validate_year
 
 
 ROLES = (
@@ -29,7 +30,7 @@ class Category(models.Model):
     """Категории (типы) произведений."""
 
     name = models.CharField(
-        max_length=256,
+        max_length=255,
         verbose_name='Category',
     )
     slug = models.SlugField(
@@ -67,8 +68,9 @@ class Title(models.Model):
         max_length=256,
         verbose_name='Title'
     )
-    year = models.IntegerField(
-        verbose_name='Year'
+    year = models.SmallIntegerField(
+        verbose_name='Year',
+        validators=[validate_year]
     )
     description = models.TextField(
         verbose_name='Description',
@@ -79,7 +81,7 @@ class Title(models.Model):
         Category,
         on_delete=models.SET_NULL,
         verbose_name='Category',
-        related_name='category',
+        related_name='titles',
         null=True
     )
     genre = models.ManyToManyField(
