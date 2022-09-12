@@ -48,5 +48,4 @@ class IsOwnerOrModeratorOrReadOnly(permissions.BasePermission):
             request.method in permissions.SAFE_METHODS
             or request.user == obj.author
             or request.user.role == 'moderator'
-            or request.user.is_superuser
         )

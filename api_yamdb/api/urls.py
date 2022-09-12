@@ -1,4 +1,3 @@
-
 from django.urls import include, path
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView
