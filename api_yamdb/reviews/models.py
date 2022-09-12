@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from .constants import CHARS_PER_STR
@@ -8,19 +9,6 @@ ROLES = (
     ('user', 'user'),
     ('moderator', 'moderator'),
     ('admin', 'admin'),
-)
-
-SCORE_CHOICES = (
-    (1, 1),
-    (2, 2),
-    (3, 3),
-    (4, 4),
-    (5, 5),
-    (6, 6),
-    (7, 7),
-    (8, 8),
-    (9, 9),
-    (10, 10),
 )
 
 
@@ -136,7 +124,10 @@ class Review(models.Model):
         verbose_name='автор_отзыва',
         related_name='reviews',
     )
-    score = models.IntegerField(choices=SCORE_CHOICES, verbose_name='Рейтинг')
+    score = models.SmallIntegerField(
+        verbose_name='Рейтинг',
+        validators=[MinValueValidator(1), MaxValueValidator(10)]
+    )
     pub_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата')
 
     class Meta:

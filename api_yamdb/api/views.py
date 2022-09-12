@@ -1,9 +1,11 @@
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+
 
 from reviews.models import Category, Genre, Review, Title, User
 from reviews.token_generator import confirmation_code
@@ -115,7 +117,9 @@ class TitleViewSet(viewsets.ModelViewSet):
     filterset_fields = ('year',)
 
     def get_queryset(self):
-        queryset = Title.objects.all()
+        queryset = Title.objects.annotate(
+            rating=Avg('reviews__score')
+        )
 
         name = self.request.query_params.get('name')
         if name is not None:
@@ -163,12 +167,18 @@ class CommentsViewSet(viewsets.ModelViewSet):
     permission_classes = (IsOwnerOrModeratorOrReadOnly,)
 
     def get_queryset(self):
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id)
+        review = get_object_or_404(
+            Review,
+            id=self.kwargs.get('review_id'),
+            title_id=self.kwargs.get('title_id'),
+        )
 
         return review.comments.all()
 
     def perform_create(self, serializer):
-        review_id = self.kwargs.get('review_id')
-        review = get_object_or_404(Review, id=review_id)
+        review = get_object_or_404(
+            Review,
+            id=self.kwargs.get('review_id'),
+            title_id=self.kwargs.get('title_id'),
+        )
         serializer.save(author=self.request.user, review=review)
