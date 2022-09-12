@@ -24,14 +24,16 @@ v1_router.register(
     CommentsViewSet, basename='comments',
 )
 
-
-urlpatterns = [
-    path('v1/users/me/', UserViewAPI.as_view()),
+auth_urlpatterns = [
     path(
-        'v1/auth/token/',
+        'token/',
         TokenObtainPairView.as_view(serializer_class=UserAuthSerializer),
         name='token_obtain_pair'
     ),
-    path('v1/auth/signup/', signup),
+    path('signup/', signup),
+]
+urlpatterns = [
+    path('v1/users/me/', UserViewAPI.as_view()),
+    path('v1/auth/', include(auth_urlpatterns)),
     path('v1/', include(v1_router.urls)),
 ]
