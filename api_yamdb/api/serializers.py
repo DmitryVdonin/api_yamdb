@@ -36,7 +36,16 @@ class UserCreateSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data.get('username') == 'me':
             raise serializers.ValidationError('Запрещенный username')
-
+        elif User.objects.filter(username=data.get('username')).exists():
+            user = User.objects.get(username=data.get('username'))
+            email = data.get('email')
+            if user.email != email:
+                raise serializers.ValidationError('Такой username уже занят')
+        elif User.objects.filter(email=data.get('email')).exists():
+            user = User.objects.get(email=data.get('email'))
+            username = data.get('username')
+            if user.username != username:
+                raise serializers.ValidationError('Такой email уже занят')
         return data
 
 
@@ -49,26 +58,20 @@ class UserSerializer(serializers.ModelSerializer):
             'last_name', 'bio', 'role'
         )
 
-    def validate(self, data):
-        if data.get('username') == 'me':
-            raise serializers.ValidationError('Запрещенный username')
-
-        return data
-
 
 class UserAuthSerializer(serializers.Serializer):
-    username = serializers.SlugField()
-    confirmation_code = serializers.CharField(max_length=100)
+    username = serializers.SlugField(required=True)
+    confirmation_code = serializers.CharField(max_length=100, required=True)
 
     def validate(self, data):
         user = get_object_or_404(User, username=data.get('username'))
-        if user.check_password(data.get('confirmation_code')):
+        if user.confirmation_code == data.get('confirmation_code'):
             refresh = RefreshToken.for_user(user)
             return {
                 'access': str(refresh.access_token),
             }
 
-        raise serializers.ValidationError('This field must be an even number.')
+        raise serializers.ValidationError('Неверный confirmation_code')
 
 
 class CategorySerializer(serializers.ModelSerializer):

@@ -5,8 +5,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .serializers import UserAuthSerializer
 from .views import (AdminUserViewSet, CategoryViewSet, CommentsViewSet,
-                    GenreViewSet, ReviewViewSet, TitleViewSet, UserViewAPI,
-                    signup)
+                    GenreViewSet, ReviewViewSet, TitleViewSet, signup)
 
 
 app_name = 'reviews'
@@ -27,7 +26,6 @@ v1_router.register(
 
 
 urlpatterns = [
-    path('v1/users/me/', UserViewAPI.as_view()),
     path(
         'v1/auth/token/',
         TokenObtainPairView.as_view(serializer_class=UserAuthSerializer),
