@@ -1,21 +1,9 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from .constants import CHARS_PER_STR
-
-
-SCORE_CHOICES = (
-    (1, 1),
-    (2, 2),
-    (3, 3),
-    (4, 4),
-    (5, 5),
-    (6, 6),
-    (7, 7),
-    (8, 8),
-    (9, 9),
-    (10, 10),
-)
+from .validators import validate_year
 
 
 class User(AbstractUser):
@@ -58,7 +46,7 @@ class Category(models.Model):
     """Категории (типы) произведений."""
 
     name = models.CharField(
-        max_length=256,
+        max_length=255,
         verbose_name='Category',
     )
     slug = models.SlugField(
@@ -96,8 +84,9 @@ class Title(models.Model):
         max_length=256,
         verbose_name='Title'
     )
-    year = models.IntegerField(
-        verbose_name='Year'
+    year = models.SmallIntegerField(
+        verbose_name='Year',
+        validators=[validate_year]
     )
     description = models.TextField(
         verbose_name='Description',
@@ -108,7 +97,7 @@ class Title(models.Model):
         Category,
         on_delete=models.SET_NULL,
         verbose_name='Category',
-        related_name='category',
+        related_name='titles',
         null=True
     )
     genre = models.ManyToManyField(
@@ -153,7 +142,10 @@ class Review(models.Model):
         verbose_name='автор_отзыва',
         related_name='reviews',
     )
-    score = models.IntegerField(choices=SCORE_CHOICES, verbose_name='Рейтинг')
+    score = models.SmallIntegerField(
+        verbose_name='Рейтинг',
+        validators=[MinValueValidator(1), MaxValueValidator(10)]
+    )
     pub_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата')
 
     class Meta:

@@ -1,4 +1,3 @@
-
 from django.urls import include, path
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -25,12 +24,16 @@ v1_router.register(
 )
 
 
-urlpatterns = [
+auth_urlpatterns = [
     path(
-        'v1/auth/token/',
+        'token/',
         TokenObtainPairView.as_view(serializer_class=UserAuthSerializer),
         name='token_obtain_pair'
     ),
-    path('v1/auth/signup/', signup),
+    path('signup/', signup),
+]
+urlpatterns = [
+    path('v1/users/me/', UserViewAPI.as_view()),
+    path('v1/auth/', include(auth_urlpatterns)),
     path('v1/', include(v1_router.urls)),
 ]

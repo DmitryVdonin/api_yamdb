@@ -1,7 +1,4 @@
-import datetime
-
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
-from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
@@ -118,38 +115,19 @@ class TitleSerializer(serializers.ModelSerializer):
             )
         ]
 
-    def validate_year(self, value):
-        now_year = datetime.datetime.now().year
-        if not (now_year >= value):
-            raise serializers.ValidationError(
-                'Проверьте год выпуска произведения!')
-
-        return value
-
 
 class ReadOnlyTitleSerializer(serializers.ModelSerializer):
     """Сериализатор для модели Title."""
 
     genre = GenreSerializer(many=True)
     category = CategorySerializer()
-    rating = serializers.SerializerMethodField()
+    rating = serializers.IntegerField()
 
     class Meta:
         model = Title
         fields = (
             'id', 'name', 'year', 'rating', 'description', 'genre', 'category'
         )
-
-    def get_rating(self, obj):
-        avg_rating = Title.objects.get(id=obj.id).reviews.aggregate(
-            Avg('score')
-        )['score__avg']
-        if avg_rating:
-
-            return round(avg_rating)
-        else:
-
-            return None
 
 
 class ReviewSerializer(serializers.ModelSerializer):
