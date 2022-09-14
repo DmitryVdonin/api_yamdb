@@ -4,14 +4,14 @@ from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from .serializers import UserAuthSerializer
-from .views import (AdminUserViewSet, CategoryViewSet, CommentsViewSet,
+from .views import (UserViewSet, CategoryViewSet, CommentsViewSet,
                     GenreViewSet, ReviewViewSet, TitleViewSet, signup)
 
 
 app_name = 'reviews'
 
 v1_router = routers.DefaultRouter()
-v1_router.register('users', AdminUserViewSet)
+v1_router.register('users', UserViewSet)
 v1_router.register('categories', CategoryViewSet, basename='categories')
 v1_router.register('titles', TitleViewSet, basename='titles')
 v1_router.register('genres', GenreViewSet, basename='genres')

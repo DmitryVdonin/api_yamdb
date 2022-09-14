@@ -19,17 +19,19 @@ from .serializers import (CategorySerializer, CommentsSerializer,
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def signup(request):
+    """Регистрация и получение confirmation_code"""
+
     serializer = UserCreateSerializer(data=request.data)
     if serializer.is_valid():
         username = serializer.validated_data.get('username')
         email = serializer.validated_data.get('email')
-        user = get_or_create(User, username=username, email=email)
-        confirmation_code = confirmation_code.make_token(user)
-        user.confirmation_code(confirmation_code)
+        user, created = User.objects.get_or_create(username=username, email=email)
+        user_confirmation_code = confirmation_code.make_token(user)
+        user.confirmation_code = user_confirmation_code
         user.is_active = True
         user.save()
         mail_subject = 'Confirm your email account.'
-        message = f'user: {user}, confirmation_code: {password}'
+        message = f'user: {user}, confirmation_code: {user_confirmation_code}'
         user.email_user(mail_subject, message)
 
         return Response(serializer.data, status=200)
@@ -37,7 +39,8 @@ def signup(request):
     return Response(serializer.errors, status=400)
 
 
-class AdminUserViewSet(viewsets.ModelViewSet):
+class UserViewSet(viewsets.ModelViewSet):
+    """Передает объекты модели User."""
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = (IsAdmin, )

@@ -11,6 +11,7 @@ from reviews.models import Category, Comments, Genre, Review, Title, User
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
+    """Сериализатор для view-функции signup"""
 
     def is_valid(self, raise_exception=False):
         if hasattr(self, 'initial_data'):
@@ -50,6 +51,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """Сериализатор для viewset UserViewSet."""
 
     class Meta:
         model = User
@@ -60,6 +62,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UserAuthSerializer(serializers.Serializer):
+    """Сериализатор для для получения токена через TokenObtainPairView"""
     username = serializers.SlugField(required=True)
     confirmation_code = serializers.CharField(max_length=100, required=True)
 
