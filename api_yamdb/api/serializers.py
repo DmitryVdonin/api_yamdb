@@ -1,3 +1,4 @@
+from django.db.models import Q
 from django.core.exceptions import MultipleObjectsReturned, ObjectDoesNotExist
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
@@ -33,17 +34,21 @@ class UserCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data.get('username') == 'me':
+
             raise serializers.ValidationError('Запрещенный username')
-        elif User.objects.filter(username=data.get('username')).exists():
-            user = User.objects.get(username=data.get('username'))
-            email = data.get('email')
-            if user.email != email:
-                raise serializers.ValidationError('Такой username уже занят')
-        elif User.objects.filter(email=data.get('email')).exists():
-            user = User.objects.get(email=data.get('email'))
-            username = data.get('username')
-            if user.username != username:
-                raise serializers.ValidationError('Такой email уже занят')
+
+        elif User.objects.filter(
+            ~Q(email=data.get('email')), username=data.get('username')
+        ).exists():
+
+            raise serializers.ValidationError('Такой username уже занят')
+
+        elif User.objects.filter(
+            ~Q(username=data.get('username')), email=data.get('email')
+        ).exists():
+
+            raise serializers.ValidationError('Такой email уже занят')
+
         return data
 
 
@@ -54,12 +59,13 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'username', 'email', 'first_name',
-            'last_name', 'bio', 'role'
+            'last_name', 'bio', 'role',
         )
 
 
 class UserAuthSerializer(serializers.Serializer):
     """Сериализатор для для получения токена через TokenObtainPairView"""
+
     username = serializers.SlugField(required=True)
     confirmation_code = serializers.CharField(max_length=100, required=True)
 
@@ -67,6 +73,7 @@ class UserAuthSerializer(serializers.Serializer):
         user = get_object_or_404(User, username=data.get('username'))
         if user.confirmation_code == data.get('confirmation_code'):
             refresh = RefreshToken.for_user(user)
+
             return {
                 'access': str(refresh.access_token),
             }
@@ -135,7 +142,7 @@ class ReviewSerializer(serializers.ModelSerializer):
 
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username',
-        default=serializers.CurrentUserDefault()
+        default=serializers.CurrentUserDefault(),
     )
 
     class Meta:
@@ -148,6 +155,7 @@ class ReviewSerializer(serializers.ModelSerializer):
             user = self.context['request'].user
             title_id = self.context.get('view').kwargs['title_id']
             if Review.objects.filter(author=user, title_id=title_id).exists():
+
                 raise serializers.ValidationError(
                     'Вы уже оставляли отзыв об этом произведении'
                 )
@@ -160,7 +168,7 @@ class CommentsSerializer(serializers.ModelSerializer):
 
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username',
-        default=serializers.CurrentUserDefault()
+        default=serializers.CurrentUserDefault(),
     )
 
     class Meta:

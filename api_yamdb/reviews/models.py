@@ -11,19 +11,20 @@ class User(AbstractUser):
     USER = 'user'
     MODERATOR = 'moderator'
     ADMIN = 'admin'
+
     USER_ROLES = (
-    (USER, 'user'),
-    (MODERATOR, 'moderator'),
-    (ADMIN, 'admin'),
-)
-    
+        (USER, 'user'),
+        (MODERATOR, 'moderator'),
+        (ADMIN, 'admin'),
+    )
+
     bio = models.TextField(
         'Биография',
         blank=True,
     )
     role = models.CharField(
         max_length=10, choices=USER_ROLES,
-        default=USER, verbose_name='Роль'
+        default=USER, verbose_name='Роль',
     )
     email = models.EmailField(max_length=50, unique=True)
     confirmation_code = models.TextField(
@@ -33,9 +34,11 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        return (self.role == 'admin'
-                or self.is_superuser
-                or self.is_staff)
+        return (
+            self.role == 'admin'
+            or self.is_superuser
+            or self.is_staff
+        )
 
     @property
     def is_moderator(self):
@@ -52,7 +55,7 @@ class Category(models.Model):
     slug = models.SlugField(
         verbose_name='Id_Category',
         unique=True,
-        max_length=50
+        max_length=50,
     )
 
     def __str__(self):
@@ -69,7 +72,7 @@ class Genre(models.Model):
     slug = models.SlugField(
         verbose_name='Id_Genre',
         unique=True,
-        max_length=50
+        max_length=50,
     )
 
     def __str__(self):
@@ -82,28 +85,29 @@ class Title(models.Model):
 
     name = models.CharField(
         max_length=256,
-        verbose_name='Title'
+        verbose_name='Title',
+        db_index=True,
     )
     year = models.SmallIntegerField(
         verbose_name='Year',
-        validators=[validate_year]
+        validators=[validate_year],
     )
     description = models.TextField(
         verbose_name='Description',
         null=True,
-        blank=True
+        blank=True,
     )
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
         verbose_name='Category',
         related_name='titles',
-        null=True
+        null=True,
     )
     genre = models.ManyToManyField(
         Genre,
         verbose_name='Genre',
-        through='GenreTitle'
+        through='GenreTitle',
     )
 
     def __str__(self):
@@ -116,12 +120,12 @@ class GenreTitle(models.Model):
     genre = models.ForeignKey(
         Genre,
         on_delete=models.CASCADE,
-        verbose_name='Genre'
+        verbose_name='Genre',
     )
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        verbose_name='Title'
+        verbose_name='Title',
     )
 
     def __str__(self):
@@ -144,7 +148,7 @@ class Review(models.Model):
     )
     score = models.SmallIntegerField(
         verbose_name='Рейтинг',
-        validators=[MinValueValidator(1), MaxValueValidator(10)]
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
     )
     pub_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата')
 
@@ -166,11 +170,12 @@ class Comments(models.Model):
     review = models.ForeignKey(
         Review, on_delete=models.CASCADE,
         verbose_name='Отзыв',
-        related_name='comments'
+        related_name='comments',
     )
     text = models.TextField(verbose_name='Текст комментария')
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE,
+        User,
+        on_delete=models.CASCADE,
         verbose_name='Автор комментария',
         related_name='comments',
     )

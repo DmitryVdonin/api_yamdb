@@ -8,6 +8,7 @@ from rest_framework.response import Response
 
 from reviews.models import Category, Genre, Review, Title, User
 from reviews.token_generator import confirmation_code
+from .filters import TitleFilter
 from .mixins import CreateListDestroyViewSet
 from .permissions import (IsAdmin, IsAdminOrReadOnly,
                           IsOwnerOrModeratorOrReadOnly)
@@ -15,7 +16,6 @@ from .serializers import (CategorySerializer, CommentsSerializer,
                           GenreSerializer, ReadOnlyTitleSerializer,
                           ReviewSerializer, TitleSerializer,
                           UserCreateSerializer, UserSerializer)
-from .filters import TitleFilter
 
 
 @api_view(['POST'])
@@ -27,7 +27,9 @@ def signup(request):
     if serializer.is_valid():
         username = serializer.validated_data.get('username')
         email = serializer.validated_data.get('email')
-        user, created = User.objects.get_or_create(username=username, email=email)
+        user, created = User.objects.get_or_create(
+            username=username, email=email
+        )
         user_confirmation_code = confirmation_code.make_token(user)
         user.confirmation_code = user_confirmation_code
         user.is_active = True
@@ -43,29 +45,36 @@ def signup(request):
 
 class UserViewSet(viewsets.ModelViewSet):
     """Передает объекты модели User."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (IsAdmin, )
+    permission_classes = (IsAdmin,)
     lookup_field = 'username'
-    filter_backends = (filters.SearchFilter, )
+    filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
 
-    @action(methods=['patch', 'get'], detail=False,
-            permission_classes=(IsAuthenticated, ),
-            url_path='me', url_name='me')
+    @action(
+        methods=['patch', 'get'], detail=False,
+        permission_classes=(IsAuthenticated,),
+        url_path='me', url_name='me',
+    )
     def me(self, request, *args, **kwargs):
         instance = self.request.user
         serializer = self.get_serializer(instance)
         if self.request.method == 'PATCH':
             data = request.data
+
             if 'role' in data:
                 data._mutable = True
                 data.pop('role')
                 data._mutable = False
+
             serializer = self.get_serializer(
-                instance, data=data, partial=True)
+                instance, data=data, partial=True
+            )
             serializer.is_valid()
             serializer.save()
+
         return Response(serializer.data)
 
 
@@ -104,10 +113,12 @@ class TitleViewSet(viewsets.ModelViewSet):
         queryset = Title.objects.annotate(
             rating=Avg('reviews__score')
         )
+
         return queryset
 
     def get_serializer_class(self):
         if self.action in ("retrieve", "list"):
+
             return ReadOnlyTitleSerializer
 
         return TitleSerializer
