@@ -6,24 +6,40 @@ from .constants import CHARS_PER_STR
 from .validators import validate_year
 
 
-ROLES = (
-    ('user', 'user'),
-    ('moderator', 'moderator'),
-    ('admin', 'admin'),
-)
-
-
 class User(AbstractUser):
 
+    USER = 'user'
+    MODERATOR = 'moderator'
+    ADMIN = 'admin'
+    USER_ROLES = (
+    (USER, 'user'),
+    (MODERATOR, 'moderator'),
+    (ADMIN, 'admin'),
+)
+    
     bio = models.TextField(
         'Биография',
         blank=True,
     )
     role = models.CharField(
-        max_length=10, choices=ROLES,
-        default='user', verbose_name='Роль'
+        max_length=10, choices=USER_ROLES,
+        default=USER, verbose_name='Роль'
     )
     email = models.EmailField(max_length=50, unique=True)
+    confirmation_code = models.TextField(
+        'Код подтверждения',
+        blank=True,
+    )
+
+    @property
+    def is_admin(self):
+        return (self.role == 'admin'
+                or self.is_superuser
+                or self.is_staff)
+
+    @property
+    def is_moderator(self):
+        return self.role == 'moderator'
 
 
 class Category(models.Model):
